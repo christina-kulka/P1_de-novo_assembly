@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# Miniasm Assembly Script
+# Miniasm Assembly Script (Step 3b)
 # Usage: ./03_assembly_miniasm.sh SAMPLE_NAME
 
-# Set parameters
-SAMPLE=$1
-BASE_DIR="$HOME/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"
-RAW_DATA_DIR="${BASE_DIR}/00_raw_data_microsynth"
-ASSEMBLY_OUTPUT_DIR="${BASE_DIR}/03_assembly"
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if sample name is provided
+SAMPLE=$1
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME"
     echo "Example: $0 B006"
@@ -37,13 +36,13 @@ echo "Output directory: ${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 
 # Activate miniasm environment
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate miniasm
+conda activate $CONDA_ENV_MINIASM
 
 cd "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 
 # Step 1: Generate overlaps with minimap2
 echo "Step 1: Finding overlaps with minimap2..."
-minimap2 -x ava-ont -t 20 -K 1G "$RAW_READS" "$RAW_READS" > overlaps.paf
+minimap2 -x ava-ont -t $THREADS -K 1G "$RAW_READS" "$RAW_READS" > overlaps.paf
 
 # Step 2: Run miniasm assembly
 echo "Step 2: Running miniasm assembly..."
@@ -55,7 +54,7 @@ awk '/^S/{print ">"$2"\n"$3}' assembly.gfa > assembly.fasta
 
 # Step 4: Polish with minipolish
 echo "Step 4: Polishing with minipolish..."
-minipolish --threads 20 "$RAW_READS" assembly.gfa > polished.gfa
+minipolish --threads $THREADS "$RAW_READS" assembly.gfa > polished.gfa
 awk '/^S/{print ">"$2"\n"$3}' polished.gfa > polished_assembly.fasta
 
 echo "Miniasm assembly completed!"

@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# Quality Control Script for Nanopore Data
+# Quality Control Script for Nanopore Data (Step 1)
 # Usage: ./01_quality_control.sh SAMPLE_NAME
 
-# Set parameters
-SAMPLE=$1
-BASE_DIR="data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"  
-RAW_DATA_DIR="${BASE_DIR}/00_raw_data_microsynth"
-QC_OUTPUT_DIR="${BASE_DIR}/01_quality_control"
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if sample name is provided
+SAMPLE=$1
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME"
     echo "Example: $0 B006"
@@ -21,7 +20,7 @@ mkdir -p "${QC_OUTPUT_DIR}/${SAMPLE}"
 
 # Activate conda environment
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate viralFlye
+conda activate $CONDA_ENV_QC
 
 # Find the raw fastq file for this sample (contains all reads)
 SAMPLE_DIR="${RAW_DATA_DIR}/${SAMPLE}_results/${SAMPLE}_results/Sequencing/"

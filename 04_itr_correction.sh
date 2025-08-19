@@ -3,11 +3,12 @@
 # ITR Correction Script (Step 4 - Final)
 # Usage: ./04_itr_correction.sh SAMPLE_NAME
 
-SAMPLE=$1
-BASE_DIR="$HOME/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"
-ASSEMBLY_OUTPUT_DIR="${BASE_DIR}/03_assembly"
-ITR_OUTPUT_DIR="${BASE_DIR}/04_final_results"
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
 
+# Check if sample name is provided
+SAMPLE=$1
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME"
     echo "Example: $0 B006"
@@ -19,7 +20,7 @@ mkdir -p "${ITR_OUTPUT_DIR}/${SAMPLE}"
 # Find polished assembly and raw reads
 MINIASM_DIR="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 POLISHED_ASSEMBLY=$(find "$MINIASM_DIR" -name "*polished*.fasta" -type f | head -1)
-RAW_READS=$(find "${BASE_DIR}/00_raw_data_microsynth/${SAMPLE}_results" -name "*raw*.fastq.gz" -type f | head -1)
+RAW_READS=$(find "${RAW_DATA_DIR}/${SAMPLE}_results" -name "*raw*.fastq.gz" -type f | head -1)
 
 if [ -z "$POLISHED_ASSEMBLY" ]; then
     echo "Error: No polished assembly found in $MINIASM_DIR"
@@ -38,17 +39,17 @@ echo "Output directory: ${ITR_OUTPUT_DIR}/${SAMPLE}"
 
 # Activate environment (TandemTools needs Python)
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate miniasm
+conda activate $CONDA_ENV_MINIASM
 
 cd "${ITR_OUTPUT_DIR}/${SAMPLE}"
 
 echo "Running TandemTools ITR correction..."
 
 # Run TandemTools with proper parameters
-python /home/ubuntu/TandemTools/tandemquast.py \
+python "${TANDEMTOOLS}/tandemquast.py" \
     --only-polish \
     --nano "$RAW_READS" \
-    -t 20 \
+    -t $THREADS \
     -o tandem_output \
     "$POLISHED_ASSEMBLY"
 

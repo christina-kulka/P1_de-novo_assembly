@@ -1,8 +1,30 @@
 #!/bin/bash
 
-ASSEMBLY_FILE="/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/03_assembly/B006/miniasm_out/polished_assembly.fasta"
+# ITR Check Script (05a)
+# Check for mirror-image sequences in ORFV genome
 
-cd /home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/03_assembly/B006/miniasm_out
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
+
+# Check if sample name is provided
+SAMPLE=$1
+if [ -z "$SAMPLE" ]; then
+    echo "Usage: $0 SAMPLE_NAME"
+    echo "Example: $0 B006"
+    exit 1
+fi
+
+ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
+
+# Check if assembly file exists
+if [ ! -f "$ASSEMBLY_FILE" ]; then
+    echo "Error: Assembly file not found: $ASSEMBLY_FILE"
+    echo "Run the assembly pipeline first!"
+    exit 1
+fi
+
+cd "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 
 echo "Checking ITRs (mirror-image sequences) in ORFV genome..."
 
@@ -37,4 +59,4 @@ done
 
 # Clean up
 rm -f genome_sequence.txt
-echo "ITR analysis completed!"
+echo "ITR analysis completed!" 

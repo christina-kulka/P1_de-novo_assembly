@@ -1,7 +1,28 @@
 #!/bin/bash
 
-# Circularity Checker Script
-ASSEMBLY="/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/03_assembly/B006/miniasm_out/polished_assembly.fasta"
+# Circularity Check Script (05b)
+# Check for circular genome structure
+
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
+
+# Check if sample name is provided
+SAMPLE=$1
+if [ -z "$SAMPLE" ]; then
+    echo "Usage: $0 SAMPLE_NAME"
+    echo "Example: $0 B006"
+    exit 1
+fi
+
+ASSEMBLY="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
+
+# Check if assembly file exists
+if [ ! -f "$ASSEMBLY" ]; then
+    echo "Error: Assembly file not found: $ASSEMBLY"
+    echo "Run the assembly pipeline first!"
+    exit 1
+fi
 
 echo "=== CHECKING FOR CIRCULAR GENOME ==="
 
@@ -38,4 +59,4 @@ echo "If circular, the genome should be trimmed to remove redundant sequence"
 
 # Clean up
 rm -f genome_seq.txt start_seq.txt end_seq.txt
-echo "Circularity check completed!"
+echo "Circularity check completed!" 

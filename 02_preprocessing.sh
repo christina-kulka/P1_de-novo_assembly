@@ -1,19 +1,14 @@
 #!/bin/bash
 
-# Data Cleaning/Preprocessing Script for Nanopore Data
+# Data Cleaning/Preprocessing Script for Nanopore Data (Step 2)
 # Usage: ./02_preprocessing.sh SAMPLE_NAME
 
-# Set parameters
-SAMPLE=$1
-BASE_DIR="data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"  
-QC_OUTPUT_DIR="${BASE_DIR}/01_quality_control"
-PREPROC_OUTPUT_DIR="${BASE_DIR}/02_preprocessing"
-
-# Tool paths
-PORECHOP="/home/ubuntu/miniconda3/bin/porechop"
-NANOFILT="/home/ubuntu/.local/bin/NanoFilt"
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if sample name is provided
+SAMPLE=$1
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME"
     echo "Example: $0 B006"
@@ -24,7 +19,6 @@ fi
 mkdir -p "${PREPROC_OUTPUT_DIR}/${SAMPLE}"
 
 # Find the raw fastq file from the original data
-RAW_DATA_DIR="${BASE_DIR}/00_raw_data_microsynth"
 SAMPLE_DIR="${RAW_DATA_DIR}/${SAMPLE}_results"
 RAW_FASTQ=$(find "$SAMPLE_DIR" -name "*raw*.fastq*" -type f | head -1)
 
@@ -45,10 +39,10 @@ $PORECHOP -i "$RAW_FASTQ" \
 
 # Step 2: Quality and length filtering with NanoFilt
 echo "Step 2: Running NanoFilt for quality/length filtering..."
-$NANOFILT --length 1000 \
-          --quality 8 \
-          --headcrop 10 \
-          --tailcrop 10 \
+$NANOFILT --length $MIN_READ_LENGTH \
+          --quality $MIN_QUALITY \
+          --headcrop $HEAD_CROP \
+          --tailcrop $TAIL_CROP \
           < "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_trimmed.fastq" \
           > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
 

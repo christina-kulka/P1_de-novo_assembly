@@ -1,18 +1,14 @@
 #!/bin/bash
 
-# Viral Verification Script (Step 3b)
+# Viral Verification Script (Step 3c)
 # Usage: ./03b_viralverify.sh SAMPLE_NAME
 
-# Set parameters
-SAMPLE=$1
-BASE_DIR="$HOME/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"
-PREPROC_OUTPUT_DIR="${BASE_DIR}/02_preprocessing"
-ASSEMBLY_OUTPUT_DIR="${BASE_DIR}/03_assembly"
-
-# Database path
-PFAM_DB="${BASE_DIR}/databases/Pfam-A.hmm.gz"
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if sample name is provided
+SAMPLE=$1
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME"
     echo "Example: $0 B006"
@@ -23,7 +19,7 @@ fi
 MINIASM_DIR="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 if [ ! -f "$MINIASM_DIR/polished_assembly.fasta" ]; then
     echo "Error: Miniasm assembly not found at $MINIASM_DIR/polished_assembly.fasta"
-    echo "Run 03a_miniasm_assembly.sh first!"
+    echo "Run 03_assembly_miniasm.sh first!"
     exit 1
 fi
 
@@ -41,7 +37,7 @@ echo "Output directory: ${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/viral_verification"
 
 # Activate conda environment
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate viralFlye
+conda activate $CONDA_ENV_QC
 
 # Check if Pfam database exists
 if [ ! -f "$PFAM_DB" ]; then

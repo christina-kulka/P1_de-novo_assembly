@@ -1,15 +1,14 @@
 #!/bin/bash
 
 # Flye Assembly Script (Step 3a)
-# Usage: ./03a_flye_assembly.sh SAMPLE_NAME
+# Usage: ./03_assembly_flye.sh SAMPLE_NAME
 
-# Set parameters
-SAMPLE=$1
-BASE_DIR="data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"
-PREPROC_OUTPUT_DIR="${BASE_DIR}/02_preprocessing"
-ASSEMBLY_OUTPUT_DIR="${BASE_DIR}/03_assembly"
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if sample name is provided
+SAMPLE=$1
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME"
     echo "Example: $0 B006"
@@ -32,14 +31,14 @@ echo "Output directory: ${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/flye_out"
 
 # Activate conda environment and run Flye
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate flye
+conda activate $CONDA_ENV_FLYE
 
 echo "Running Flye assembly..."
 flye --nano-raw "$CLEAN_READS" \
      --out-dir "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/flye_out" \
-     --threads 20 \
-     --genome-size 140k \
-     --min-overlap 1000 \
+     --threads $THREADS \
+     --genome-size $GENOME_SIZE \
+     --min-overlap $MIN_OVERLAP \
      --iterations 1
 
 # Check if assembly succeeded

@@ -1,14 +1,32 @@
 #!/bin/bash
 
-# BLAST Analysis of Extra Sequence
+# BLAST Analysis of Extra Sequence Script (05e)
 # Check if the additional 66kb is legitimate ORFV sequence
 
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/config.sh"
+
+# Check if sample name is provided
+SAMPLE=$1
+if [ -z "$SAMPLE" ]; then
+    echo "Usage: $0 SAMPLE_NAME"
+    echo "Example: $0 B006"
+    exit 1
+fi
+
+ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
+
+# Check if assembly file exists
+if [ ! -f "$ASSEMBLY_FILE" ]; then
+    echo "Error: Assembly file not found: $ASSEMBLY_FILE"
+    echo "Run the assembly pipeline first!"
+    exit 1
+fi
+
+cd "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
+
 echo "=== ANALYZING EXTRA 66KB SEQUENCE ==="
-
-ASSEMBLY_DIR="/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/03_assembly/B006/miniasm_out"
-ASSEMBLY_FILE="$ASSEMBLY_DIR/polished_assembly.fasta"
-
-cd "$ASSEMBLY_DIR"
 
 echo "Extracting extra sequence (first 66,665 bp)..."
 
@@ -68,4 +86,4 @@ rm -f temp_genome.txt extra_sequence.txt
 
 echo ""
 echo "Detailed results saved in: blast_extra_results.txt"
-echo "Extra sequence saved in: extra_sequence.fasta"
+echo "Extra sequence saved in: extra_sequence.fasta" 
