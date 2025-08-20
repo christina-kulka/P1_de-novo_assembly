@@ -7,40 +7,63 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-# Check if sample name is provided
+# Parse command line arguments
 SAMPLE=$1
+ASSEMBLY_TYPE=${2:-"miniasm_viral"}  # Default to miniasm_viral
+
 if [ -z "$SAMPLE" ]; then
-    echo "Usage: $0 SAMPLE_NAME"
+    echo "Usage: $0 SAMPLE_NAME [ASSEMBLY_TYPE]"
     echo "Example: $0 B006"
+    echo "Example: $0 B006 canu"
+    echo "Assembly types: miniasm_viral, miniasm_raw, canu, microsynth"
     exit 1
 fi
 
-# Create output directory
-ANNOTATION_OUTPUT_DIR="${BASE_DIR}/05_annotation"
-mkdir -p "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}"
+# Define assembly file paths based on type
+case $ASSEMBLY_TYPE in
+    "miniasm_viral")
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta"
+        ;;
+    "miniasm_raw")
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
+        ;;
+    "canu")
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_out/${SAMPLE}.contigs.fasta"
+        ;;
+    "microsynth")
+        ASSEMBLY_FILE="${BASE_DIR}/00_raw_data_microsynth/${SAMPLE}_results/${SAMPLE}_results/Assembly/${SAMPLE}.fasta"
+        ;;
+    *)
+        echo "Error: Unknown assembly type '$ASSEMBLY_TYPE'"
+        echo "Valid types: miniasm_viral, miniasm_raw, canu, microsynth"
+        exit 1
+        ;;
+esac
 
-# Find assembly file (looking in miniasm output)
-ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
+# Create output directory with assembly type subfolder
+ANNOTATION_OUTPUT_DIR="${BASE_DIR}/05_annotation"
+mkdir -p "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
 
 if [ ! -f "$ASSEMBLY_FILE" ]; then
-    echo "Error: Assembly file not found for sample $SAMPLE"
+    echo "Error: Assembly file not found for sample $SAMPLE, type $ASSEMBLY_TYPE"
     echo "Expected: $ASSEMBLY_FILE"
     exit 1
 fi
 
 echo "Found assembly file: $ASSEMBLY_FILE"
 echo "Processing sample: $SAMPLE"
-echo "Output directory: ${ANNOTATION_OUTPUT_DIR}/${SAMPLE}"
+echo "Assembly type: $ASSEMBLY_TYPE"
+echo "Output directory: ${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
 
 # Activate conda environment (assuming prokka is in your miniasm env or create new one)
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate $CONDA_ENV_PROKKA
+conda activate $CONDA_ENV_MINIASM  # or create a separate prokka environment
 
-cd "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}"
+cd "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
 
 # Find the corresponding ORF reference file for this sample
 ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
-ORF_PROTEIN_FILE="${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_ORFs_proteins.faa"
+ORF_PROTEIN_FILE="${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}/${SAMPLE}_ORFs_proteins.faa"
 
 # Check if ORF reference exists and convert to proteins
 if [ ! -f "$ORF_REFERENCE_FILE" ]; then

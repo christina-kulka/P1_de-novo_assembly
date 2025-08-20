@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Assembly comparison and ITR extraction script
 Usage: python 05_compare_and_extract_itr.py SAMPLE_NAME
@@ -33,61 +34,48 @@ def extract_terminals(fasta_file, extract_size):
     
     return left_terminal, right_terminal
 
-def compare_assemblies_and_determine_size(sample):
-    """Compare assembly sizes and determine ITR extraction size"""
-    
-    # Define paths
+def get_assembly_paths(sample):
+    """Get paths to all assembly types"""
     base_dir = "/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly"
     
-    # Your viral assembly (the cleaned one)
-    #your_assembly = f"{base_dir}/03_assembly/{sample}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta"
-    your_assembly = f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta"
+    assemblies = {
+        'miniasm': f"{base_dir}/03_assembly/{sample}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta",
+        'canu': f"{base_dir}/03_assembly/{sample}/canu_out/{sample}.contigs.fasta",
+        'microsynth': f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta"
+    }
+    
+    return assemblies
 
-
-    # Microsynth assembly
-    microsynth_assembly = f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta"
+def compare_all_assemblies(sample):
+    """Compare sizes of all assembly types"""
+    assemblies = get_assembly_paths(sample)
     
     print(f"=== ASSEMBLY COMPARISON FOR {sample} ===")
     
-    # Get assembly lengths
-    your_length = get_assembly_length(your_assembly)
-    micro_length = get_assembly_length(microsynth_assembly)
+    # Get assembly lengths for all types
+    lengths = {}
+    available_assemblies = {}
     
-    if your_length is None:
-        print(f"Error: Your assembly not found: {your_assembly}")
-        return None
+    for name, path in assemblies.items():
+        length = get_assembly_length(path)
+        lengths[name] = length
+        if length is not None:
+            available_assemblies[name] = path
+            print(f"{name.capitalize():12} {length:,} bp")
+        else:
+            print(f"{name.capitalize():12} Not found")
     
-    if micro_length is None:
-        print(f"Error: Microsynth assembly not found: {microsynth_assembly}")
-        return None
+    # Calculate differences
+    if len(available_assemblies) > 1:
+        print(f"\nSize differences:")
+        assembly_names = list(available_assemblies.keys())
+        for i, name1 in enumerate(assembly_names):
+            for name2 in assembly_names[i+1:]:
+                diff = abs(lengths[name1] - lengths[name2])
+                print(f"  {name1} vs {name2}: {diff:,} bp difference")
     
-    print(f"Your assembly:    {your_length:,} bp")
-    print(f"Microsynth:       {micro_length:,} bp")
-    
-    # Calculate difference
-    length_diff = abs(your_length - micro_length)
-    print(f"Difference:       {length_diff:,} bp")
-    
-    # Determine extraction size
-    if your_length > micro_length and length_diff > 20000:  # Your assembly much longer
-        #extract_size = min(length_diff // 2 + 5000, 25000)  # Half the difference + 5kb, max 25kb
-        extract_size = 5000  # Use standard 5kb for Microsynth analysis
-
-        reason = f"Your assembly is {length_diff:,} bp longer - using {extract_size:,} bp"
-    elif micro_length > your_length and length_diff > 20000:  # Microsynth much longer
-        #extract_size = min(length_diff // 2 + 5000, 25000)
-        extract_size = 5000  # Use standard 5kb for Microsynth analysis
-
-        reason = f"Microsynth is {length_diff:,} bp longer - using {extract_size:,} bp"
-    else:  # Similar sizes
-        extract_size = 5000
-        reason = "Similar assembly sizes - using standard 5,000 bp"
-    
-    print(f"ITR extraction:   {extract_size:,} bp from each end")
-    print(f"Reason:           {reason}")
     print()
-    
-    return your_assembly, microsynth_assembly, extract_size
+    return available_assemblies, lengths
 
 def simple_similarity(seq1, seq2):
     """Calculate simple similarity percentage between two sequences"""
@@ -131,53 +119,33 @@ def find_best_itr_match(left_term, right_term, window_size=100, step_size=50):
     
     return best_similarity, best_left_start, best_right_start, best_length
 
-def analyze_itr_for_sample(sample):
-    """Complete ITR analysis for one sample"""
+def analyze_single_assembly_itr(assembly_name, assembly_path, extract_size=5000):
+    """Analyze ITR for a single assembly"""
+    print(f"--- {assembly_name.upper()} ASSEMBLY ---")
     
-    # Compare assemblies and determine extraction size
-    result = compare_assemblies_and_determine_size(sample)
-    if result is None:
-        return
+    # Extract terminals
+    left_term, right_term = extract_terminals(assembly_path, extract_size)
+    if left_term is None:
+        print(f"Error: Could not extract terminals from {assembly_name}")
+        return None
     
-    your_assembly, microsynth_assembly, extract_size = result
+    # Find best ITR match
+    similarity, left_start, right_start, itr_length = find_best_itr_match(left_term, right_term)
     
-    print(f"=== ITR ANALYSIS FOR {sample} ===")
-    
-    # Extract terminals from your assembly
-    your_left, your_right = extract_terminals(your_assembly, extract_size)
-    if your_left is None:
-        print("Error: Could not extract terminals from your assembly")
-        return
-    
-    # Find ITR in your assembly
-    print("Analyzing your assembly...")
-
-    # Try searching deeper into the terminal regions
-    print("Searching for ITRs in full terminal regions...")
-    similarity, left_start, right_start, itr_length = find_best_itr_match(your_left, your_right)
-    print(f"Full region search: {similarity:.1f}%")
-
-    # Also try just the outermost 5kb (like a normal genome)
-    your_left_5k = your_left[:5000]
-    your_right_5k = your_right[-5000:]
-    sim_5k, left_5k, right_5k, len_5k = find_best_itr_match(your_left_5k, your_right_5k)
-    
-    print(f"Outermost 5kb only: {sim_5k:.1f}%")    
     print(f"Best ITR match:")
     print(f"  Similarity:     {similarity:.1f}%")
-    print(f"  ITR length:     ~{itr_length:,} bp")
+    print(f"  ITR length:     {itr_length} bp")
     print(f"  Left position:  {left_start + 1}-{left_start + itr_length}")
-    print(f"  Right position: {len(your_right) - right_start - itr_length + 1}-{len(your_right) - right_start}")
+    print(f"  Right position: {len(right_term) - right_start - itr_length + 1}-{len(right_term) - right_start}")
     
-    # Check for internal ITR patterns (might indicate true genome boundaries)
-    print("\nSearching for internal ITR patterns...")
-    genome_seq = next(SeqIO.parse(your_assembly, "fasta")).seq
+    # Check for internal ITR patterns
+    print(f"Searching for internal ITR patterns...")
+    genome_seq = next(SeqIO.parse(assembly_path, "fasta")).seq
     genome_length = len(genome_seq)
-
-    # Test potential genome boundaries every 5kb
+    
     best_internal_sim = 0
     best_internal_pos = 0
-
+    
     for pos in range(5000, genome_length - 5000, 5000):
         left_test = genome_seq[pos:pos + 2000]
         right_test = genome_seq[-(pos + 2000):-pos].reverse_complement()
@@ -187,26 +155,65 @@ def analyze_itr_for_sample(sample):
             if sim > best_internal_sim:
                 best_internal_sim = sim
                 best_internal_pos = pos
-
-    print(f"Best internal ITR-like pattern: {best_internal_sim:.1f}% at position {best_internal_pos}")
-
-    # Quick comparison with Microsynth if available
-    micro_left, micro_right = extract_terminals(microsynth_assembly, 5000)
-    if micro_left is not None:
-        print("\nComparing with Microsynth assembly (5kb)...")
-        micro_sim, _, _, micro_len = find_best_itr_match(micro_left, micro_right)
-        print(f"  Microsynth ITR similarity: {micro_sim:.1f}%")
     
+    print(f"Best internal ITR-like pattern: {best_internal_sim:.1f}% at position {best_internal_pos}")
     print()
+    
+    return {
+        'similarity': similarity,
+        'itr_length': itr_length,
+        'left_start': left_start,
+        'right_start': right_start,
+        'internal_sim': best_internal_sim,
+        'internal_pos': best_internal_pos
+    }
+
+def analyze_all_assemblies_itr(sample):
+    """Complete ITR analysis for all available assemblies"""
+    
+    # Compare assembly sizes
+    available_assemblies, lengths = compare_all_assemblies(sample)
+    
+    if not available_assemblies:
+        print("Error: No assemblies found for analysis")
+        return
+    
+    print(f"=== ITR ANALYSIS FOR {sample} ===")
+    
+    # Analyze each assembly
+    results = {}
+    for assembly_name, assembly_path in available_assemblies.items():
+        results[assembly_name] = analyze_single_assembly_itr(assembly_name, assembly_path)
+    
+    # Summary comparison
+    print("=== ITR COMPARISON SUMMARY ===")
+    print(f"{'Assembly':<12} {'Size (bp)':<10} {'ITR Sim (%)':<12} {'ITR Length':<12} {'Internal Sim (%)':<15}")
+    print("-" * 70)
+    
+    for assembly_name in available_assemblies.keys():
+        if results[assembly_name]:
+            result = results[assembly_name]
+            print(f"{assembly_name.capitalize():<12} {lengths[assembly_name]:<10,} "
+                  f"{result['similarity']:<12.1f} {result['itr_length']:<12} "
+                  f"{result['internal_sim']:<15.1f}")
+        else:
+            print(f"{assembly_name.capitalize():<12} {lengths[assembly_name]:<10,} {'Failed':<12} {'Failed':<12} {'Failed':<15}")
+    
+    # Identify best ITR result
+    valid_results = {name: result for name, result in results.items() if result is not None}
+    if valid_results:
+        best_assembly = max(valid_results.keys(), key=lambda x: valid_results[x]['similarity'])
+        print(f"\nBest ITR detection: {best_assembly.capitalize()} assembly "
+              f"({valid_results[best_assembly]['similarity']:.1f}% similarity)")
 
 def main():
     if len(sys.argv) != 2:
         print("Usage: python 05_compare_and_extract_itr.py SAMPLE_NAME")
-        print("Example: python 05_compare_and_extract_itr.py B006")
+        print("Example: python 05_compare_and_extract_itr.py D1701")
         sys.exit(1)
     
     sample = sys.argv[1]
-    analyze_itr_for_sample(sample)
+    analyze_all_assemblies_itr(sample)
 
 if __name__ == "__main__":
     main()

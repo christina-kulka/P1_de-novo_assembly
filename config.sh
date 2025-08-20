@@ -18,17 +18,22 @@ ITR_OUTPUT_DIR="${BASE_DIR}/04_final_results"
 # Database paths
 PFAM_DB="${BASE_DIR}/databases/Pfam-A.hmm.gz"
 ORF_DATABASE_DIR="/home/ubuntu/data-volume/001_Raw_Data/Databases/ORF"
+VIRAL_DB_DIR="${BASE_DIR}/databases/viral"
+VIRAL_REF_FASTA="${VIRAL_DB_DIR}/parapoxvirus_references.fasta"
 
 # Tool paths
 PORECHOP="/home/ubuntu/miniconda3/bin/porechop"
-NANOFILT="/home/ubuntu/.local/bin/NanoFilt"
+NANOFILT="/home/ubuntu/miniconda3/envs/viralFlye/bin/NanoFilt"
 TANDEMTOOLS="/home/ubuntu/TandemTools"
+KRAKEN2="/home/ubuntu/miniconda3/bin/kraken2"
+KRAKEN2_BUILD="/home/ubuntu/miniconda3/bin/kraken2-build"
 
 # Conda environment names
 CONDA_ENV_QC="viralFlye"
 CONDA_ENV_FLYE="flye"
 CONDA_ENV_MINIASM="miniasm"
 CONDA_ENV_PROKKA="prokka"
+CONDA_ENV_CANU="canu"
 
 # Assembly parameters
 GENOME_SIZE="160k"
@@ -37,4 +42,5 @@ MIN_READ_LENGTH="1000"
 MIN_QUALITY="8"
 HEAD_CROP="10"
 TAIL_CROP="10"
-THREADS="20" 
+THREADS="25" 
+CANU_MEMORY="50G"

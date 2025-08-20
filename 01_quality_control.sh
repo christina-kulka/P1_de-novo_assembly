@@ -22,6 +22,11 @@ mkdir -p "${QC_OUTPUT_DIR}/${SAMPLE}"
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate $CONDA_ENV_QC
 
+echo "Active conda environment: $CONDA_DEFAULT_ENV"
+echo "NanoPlot location: $(which NanoPlot)"
+echo "Python location: $(which python)"
+echo "PATH: $PATH"
+
 # Find the raw fastq file for this sample (contains all reads)
 SAMPLE_DIR="${RAW_DATA_DIR}/${SAMPLE}_results/${SAMPLE}_results/Sequencing/"
 echo "Processing sample: $SAMPLE"

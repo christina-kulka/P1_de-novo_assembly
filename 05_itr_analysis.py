@@ -32,7 +32,8 @@ def get_assembly_paths(sample, config, assembly_type='flye'):
         'microsynth': f"{base_dir}/{config['microsynth_dir']}/{sample}_results/{sample}_results/Assembly/{sample}.fasta",
         'miniasm_raw': f"{base_dir}/{config['assembly_dir']}/{sample}/miniasm_out/polished_assembly.fasta",
         'miniasm_viral': f"{base_dir}/{config['assembly_dir']}/{sample}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta",
-        'flye': f"{base_dir}/{config['assembly_dir']}/{sample}/flye_out/assembly.fasta"
+        'flye': f"{base_dir}/{config['assembly_dir']}/{sample}/flye_out/assembly.fasta",
+        'canu': f"{base_dir}/{config['assembly_dir']}/{sample}/canu_out/{sample}.contigs.fasta"
     }
     
     return paths[assembly_type] if assembly_type in paths else None
@@ -309,7 +310,7 @@ def analyze_sample_itr(sample, assembly_type='flye', terminal_size=5000):
 def main():
     parser = argparse.ArgumentParser(description='Comprehensive ITR Analysis')
     parser.add_argument('sample', help='Sample name (e.g., B006, D1701)')
-    parser.add_argument('--assembly', choices=['flye', 'miniasm_viral', 'miniasm_raw', 'microsynth'], 
+    parser.add_argument('--assembly', choices=['flye', 'miniasm_viral', 'miniasm_raw', 'microsynth', "canu"], 
                        default='flye', help='Assembly type to analyze')
     parser.add_argument('--terminal-size', type=int, default=5000, 
                        help='Size of terminal regions to extract (bp)')

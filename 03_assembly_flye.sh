@@ -19,7 +19,9 @@ fi
 mkdir -p "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}"
 
 # Check if clean reads file exists
-CLEAN_READS="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
+CLEAN_READS="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_aggressive.fastq"
+
+#CLEAN_READS="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
 
 if [ ! -f "$CLEAN_READS" ]; then
     echo "Error: Clean reads file not found: $CLEAN_READS"

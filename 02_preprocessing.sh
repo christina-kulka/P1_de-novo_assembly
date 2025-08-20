@@ -18,6 +18,9 @@ fi
 # Create output directory for this sample
 mkdir -p "${PREPROC_OUTPUT_DIR}/${SAMPLE}"
 
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate $CONDA_ENV_QC
+
 # Find the raw fastq file from the original data
 SAMPLE_DIR="${RAW_DATA_DIR}/${SAMPLE}_results"
 RAW_FASTQ=$(find "$SAMPLE_DIR" -name "*raw*.fastq*" -type f | head -1)
@@ -46,8 +49,32 @@ $NANOFILT --length $MIN_READ_LENGTH \
           < "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_trimmed.fastq" \
           > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
 
+# Step 3: Viral-specific read filtering
+echo "Step 3: Filtering for viral reads..."
+if [ -f "$VIRAL_REF_FASTA" ]; then
+    minimap2 -ax map-ont "$VIRAL_REF_FASTA" \
+             "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq" \
+             | samtools view -F 4 -b \
+             | samtools fastq > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
+    
+    echo "Viral reads extracted: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
+    echo "Viral reads count: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq)"
+    
+    INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
+else
+    echo "Warning: Viral reference not found, skipping viral filtering"
+    INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
+fi
+
+# Step 4: Remove extreme outlier reads
+echo "Step 4: Filtering extreme outlier reads..."
+seqkit seq -M 200000 "$INPUT_FOR_OUTLIER" \
+    > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_final.fastq"
+
+echo "Final processed reads: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_final.fastq"
+echo "Final reads count: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_final.fastq)"
+
 echo "Preprocessing completed for $SAMPLE"
-echo "Final clean reads: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
 
 # Optional: Get stats on clean reads
 echo "Clean reads statistics:"
