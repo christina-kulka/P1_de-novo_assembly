@@ -35,7 +35,7 @@ echo "Output directory: ${PREPROC_OUTPUT_DIR}/${SAMPLE}"
 echo "Step 1: Running Porechop for adapter trimming..."
 $PORECHOP -i "$RAW_FASTQ" \
           -o "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_trimmed.fastq" \
-          --threads 4
+          --threads 20
 
 # Step 2: Quality and length filtering with NanoFilt
 echo "Step 2: Running NanoFilt for quality/length filtering..."

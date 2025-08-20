@@ -17,6 +17,7 @@ ITR_OUTPUT_DIR="${BASE_DIR}/04_final_results"
 
 # Database paths
 PFAM_DB="${BASE_DIR}/databases/Pfam-A.hmm.gz"
+ORF_DATABASE_DIR="/home/ubuntu/data-volume/001_Raw_Data/Databases/ORF"
 
 # Tool paths
 PORECHOP="/home/ubuntu/miniconda3/bin/porechop"
@@ -27,9 +28,10 @@ TANDEMTOOLS="/home/ubuntu/TandemTools"
 CONDA_ENV_QC="viralFlye"
 CONDA_ENV_FLYE="flye"
 CONDA_ENV_MINIASM="miniasm"
+CONDA_ENV_PROKKA="prokka"
 
 # Assembly parameters
-GENOME_SIZE="140k"
+GENOME_SIZE="160k"
 MIN_OVERLAP="1000"
 MIN_READ_LENGTH="1000"
 MIN_QUALITY="8"
