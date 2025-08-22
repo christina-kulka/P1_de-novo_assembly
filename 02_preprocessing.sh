@@ -43,6 +43,7 @@ $PORECHOP -i "$RAW_FASTQ" \
 # Step 2: Quality and length filtering with NanoFilt
 echo "Step 2: Running NanoFilt for quality/length filtering..."
 $NANOFILT --length $MIN_READ_LENGTH \
+          --maxlength $MAX_READ_LENGTH \
           --quality $MIN_QUALITY \
           --headcrop $HEAD_CROP \
           --tailcrop $TAIL_CROP \

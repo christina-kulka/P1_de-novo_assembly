@@ -30,6 +30,9 @@ case $ASSEMBLY_TYPE in
     "canu")
         ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_out/${SAMPLE}.contigs.fasta"
         ;;
+    "canu_ultra")
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_ultra_output/${SAMPLE}.contigs.fasta"
+        ;;
     "microsynth")
         ASSEMBLY_FILE="${BASE_DIR}/00_raw_data_microsynth/${SAMPLE}_results/${SAMPLE}_results/Assembly/${SAMPLE}.fasta"
         ;;
@@ -57,7 +60,7 @@ echo "Output directory: ${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
 
 # Activate conda environment (assuming prokka is in your miniasm env or create new one)
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate $CONDA_ENV_MINIASM  # or create a separate prokka environment
+conda activate $CONDA_ENV_PROKKA
 
 cd "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
 

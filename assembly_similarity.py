@@ -20,7 +20,8 @@ def get_assembly_paths(sample):
     assemblies = {
         'miniasm': f"{base_dir}/03_assembly/{sample}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta",
         'canu': f"{base_dir}/03_assembly/{sample}/canu_out/{sample}.contigs.fasta",
-        'microsynth': f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta"
+        'microsynth': f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta",
+        'canu_ultra': f"{base_dir}/03_assembly/{sample}/canu_ultra_output/{sample}.contigs.fasta"
     }
     
     # Check which assemblies exist
@@ -30,6 +31,21 @@ def get_assembly_paths(sample):
             available[name] = path
     
     return available
+
+def get_longest_contig(fasta_file):
+    """Get the longest contig from a FASTA file"""
+    if not os.path.exists(fasta_file):
+        return None
+    
+    longest_record = None
+    max_length = 0
+    
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        if len(record.seq) > max_length:
+            max_length = len(record.seq)
+            longest_record = record
+    
+    return longest_record
 
 def get_assembly_stats(fasta_file):
     """Get basic assembly statistics"""

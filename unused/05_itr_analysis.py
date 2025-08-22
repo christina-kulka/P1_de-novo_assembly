@@ -33,10 +33,26 @@ def get_assembly_paths(sample, config, assembly_type='flye'):
         'miniasm_raw': f"{base_dir}/{config['assembly_dir']}/{sample}/miniasm_out/polished_assembly.fasta",
         'miniasm_viral': f"{base_dir}/{config['assembly_dir']}/{sample}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta",
         'flye': f"{base_dir}/{config['assembly_dir']}/{sample}/flye_out/assembly.fasta",
-        'canu': f"{base_dir}/{config['assembly_dir']}/{sample}/canu_out/{sample}.contigs.fasta"
+        'canu': f"{base_dir}/{config['assembly_dir']}/{sample}/canu_out/{sample}.contigs.fasta",
+        'canu_ultra': f"{base_dir}/03_assembly/{sample}/canu_ultra_output/{sample}.contigs.fasta"
     }
     
     return paths[assembly_type] if assembly_type in paths else None
+
+def get_longest_contig(fasta_file):
+    """Get the longest contig from a FASTA file"""
+    if not os.path.exists(fasta_file):
+        return None
+    
+    longest_record = None
+    max_length = 0
+    
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        if len(record.seq) > max_length:
+            max_length = len(record.seq)
+            longest_record = record
+    
+    return longest_record
 
 def get_sequence_info(fasta_file):
     """Get basic sequence information"""
