@@ -13,7 +13,9 @@ RAW_DATA_DIR="${BASE_DIR}/00_raw_data_microsynth"
 QC_OUTPUT_DIR="${BASE_DIR}/01_quality_control"
 PREPROC_OUTPUT_DIR="${BASE_DIR}/02_preprocessing"
 ASSEMBLY_OUTPUT_DIR="${BASE_DIR}/03_assembly"
-ITR_OUTPUT_DIR="${BASE_DIR}/04_final_results"
+ANNOTATION_OUTPUT_DIR="${BASE_DIR}/04_annotation"
+ITR_OUTPUT_DIR="${BASE_DIR}/05_itr_analysis"
+FINAL_ASSEMBLY_DIR="${BASE_DIR}/06_trimmed_assembly"
 
 # Database paths
 PFAM_DB="${BASE_DIR}/databases/Pfam-A.hmm.gz"
@@ -27,6 +29,8 @@ NANOFILT="/home/ubuntu/miniconda3/envs/viralFlye/bin/NanoFilt"
 TANDEMTOOLS="/home/ubuntu/TandemTools"
 KRAKEN2="/home/ubuntu/miniconda3/bin/kraken2"
 KRAKEN2_BUILD="/home/ubuntu/miniconda3/bin/kraken2-build"
+BLASTN="/home/ubuntu/miniconda3/envs/itr_analysis/bin/blastn"
+MAKEBLASTDB="/home/ubuntu/miniconda3/envs/itr_analysis/bin/makeblastdb"
 
 # Conda environment names
 CONDA_ENV_QC="viralFlye"
@@ -34,14 +38,41 @@ CONDA_ENV_FLYE="flye"
 CONDA_ENV_MINIASM="miniasm"
 CONDA_ENV_PROKKA="prokka"
 CONDA_ENV_CANU="canu"
+CONDA_ENV_ITR="itr_analysis"
+
 
 # parameters
 GENOME_SIZE="150k"
-MIN_OVERLAP="1000"
+THREADS="25" 
+
+# Updated filtering parameters for better ITR handling
 MIN_READ_LENGTH="3000"
-MAX_READ_LENGTH="50000"
-MIN_QUALITY="15"
+MAX_READ_LENGTH="40000"  # Reduced to avoid concatemers but keep ITR-spanning reads
+MIN_QUALITY="13"         # Slightly more permissive
 HEAD_CROP="10"
 TAIL_CROP="10"
-THREADS="25" 
+
+# Updated Canu parameters for viral repeats
+CORRECTED_ERROR_RATE="0.16"
+MIN_OVERLAP="500"
+UTG_REPEATS="20"
 CANU_MEMORY="50G"
+
+
+# ORF analysis paths
+ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
+ORF_PROTEIN_FILE="${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}/${SAMPLE}_ORFs_proteins.faa"
+
+# ITR analysis output
+ITR_ANALYSIS_DIR="${BASE_DIR}/05_itr_analysis"
+ANNOTATION_OUTPUT_DIR="${BASE_DIR}/04_annotation"
+
+# Hairpin search parameters
+HAIRPIN_MIN_LENGTH="50"
+HAIRPIN_MAX_LENGTH="100"
+HAIRPIN_SEARCH_REGION="3000"  # bp from contig ends to search
+
+# ORF reference file (already defined but making sure)
+ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
+
+PROXIMITY_THRESHOLD=500

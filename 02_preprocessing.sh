@@ -48,35 +48,36 @@ $NANOFILT --length $MIN_READ_LENGTH \
           --headcrop $HEAD_CROP \
           --tailcrop $TAIL_CROP \
           < "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_trimmed.fastq" \
-          > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
+          > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean.fastq"
 
 # Step 3: Viral-specific read filtering
-echo "Step 3: Filtering for viral reads..."
-if [ -f "$VIRAL_REF_FASTA" ]; then
-    minimap2 -ax map-ont "$VIRAL_REF_FASTA" \
-             "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq" \
-             | samtools view -F 4 -b \
-             | samtools fastq > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
-    
-    echo "Viral reads extracted: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
-    echo "Viral reads count: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq)"
-    
-    INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
-else
-    echo "Warning: Viral reference not found, skipping viral filtering"
-    INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq"
-fi
+#echo "Step 3: Filtering for viral reads..."
+#if [ -f "$VIRAL_REF_FASTA" ]; then
+#    minimap2 -ax map-ont "$VIRAL_REF_FASTA" \
+#             "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean.fastq" \
+#             | samtools view -F 4 -b \
+#             | samtools fastq > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
+#    
+#    echo "Viral reads extracted: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
+#    echo "Viral reads count: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq)"
+#    
+#    INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_viral.fastq"
+#else
+#    echo "Warning: Viral reference not found, skipping viral filtering"
+#    INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean.fastq"
+#   fi
+INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean.fastq"
 
 # Step 4: Remove extreme outlier reads
 echo "Step 4: Filtering extreme outlier reads..."
 seqkit seq -M 200000 "$INPUT_FOR_OUTLIER" \
-    > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_final.fastq"
+    > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean_final.fastq"
 
-echo "Final processed reads: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_final.fastq"
-echo "Final reads count: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_final.fastq)"
+echo "Final processed reads: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean_final.fastq"
+echo "Final reads count: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean_final.fastq)"
 
 echo "Preprocessing completed for $SAMPLE"
 
 # Optional: Get stats on clean reads
 echo "Clean reads statistics:"
-echo "Number of reads: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_clean.fastq)"
+echo "Number of reads: $(grep -c '^@' ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean.fastq)"

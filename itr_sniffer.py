@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from Bio import SeqIO
 import numpy as np
+import importlib.util
 
 def get_assembly_paths(sample):
     """Get paths to all assembly types"""
@@ -20,19 +21,23 @@ def get_assembly_paths(sample):
     assemblies = {
         'miniasm': {
             'assembly': f"{base_dir}/03_assembly/{sample}/viral_verification/Prediction_results_fasta/polished_assembly_virus.fasta",
-            'annotation': f"{base_dir}/05_annotation/{sample}/miniasm_viral/{sample}.gff"
+            'annotation': f"{base_dir}/04_annotation/{sample}/miniasm_viral/{sample}.gff"
         },
         'canu': {
             'assembly': f"{base_dir}/03_assembly/{sample}/canu_out/{sample}.contigs.fasta",
-            'annotation': f"{base_dir}/05_annotation/{sample}/canu/{sample}.gff"
+            'annotation': f"{base_dir}/04_annotation/{sample}/canu/{sample}.gff"
         },
         'canu_ultra': {
-            'assembly': f"{base_dir}/03_assembly/{sample}/canu_ultra_output/{sample}.contigs.fasta",
-            'annotation': f"{base_dir}/05_annotation/{sample}/canu_ultra/{sample}.gff"
+            'assembly': f"{base_dir}/03_assembly/{sample}/canu_ultra_output/{sample}.longest_contig.fasta",
+            'annotation': f"{base_dir}/04_annotation/{sample}/canu_ultra/{sample}.gff"
+        },
+        'canu_ultra_trimmed': {
+            'assembly': f"{base_dir}/06_trimmed_assembly/{sample}/canu_ultra/{sample}_canu_ultra_trimmed.fasta",
+            'annotation': f"{base_dir}/04_annotation/{sample}/canu_ultra_trimmed/{sample}.gff"
         },
         'microsynth': {
             'assembly': f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta",
-            'annotation': f"{base_dir}/05_annotation/{sample}/microsynth/{sample}.gff"
+            'annotation': f"{base_dir}/04_annotation/{sample}/microsynth/{sample}.gff"
         }
     }
     

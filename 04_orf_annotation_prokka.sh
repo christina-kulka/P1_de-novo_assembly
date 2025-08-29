@@ -15,7 +15,7 @@ if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME [ASSEMBLY_TYPE]"
     echo "Example: $0 B006"
     echo "Example: $0 B006 canu"
-    echo "Assembly types: miniasm_viral, miniasm_raw, canu, microsynth"
+    echo "Assembly types: miniasm_viral, miniasm_raw, canu, canu_ultra, canu_super, microsynth"
     exit 1
 fi
 
@@ -28,10 +28,16 @@ case $ASSEMBLY_TYPE in
         ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
         ;;
     "canu")
-        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_out/${SAMPLE}.contigs.fasta"
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_out/${SAMPLE}.longest_contig.fasta"
         ;;
     "canu_ultra")
-        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_ultra_output/${SAMPLE}.contigs.fasta"
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_ultra_output/${SAMPLE}.longest_contig.fasta"
+        ;;
+    "canu_ultra_trimmed")
+        ASSEMBLY_FILE="${FINAL_ASSEMBLY_DIR}/${SAMPLE}/canu_ultra/${SAMPLE}_canu_ultra_trimmed.fasta"
+        ;;
+    "canu_super")
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/super_canu_out/${SAMPLE}.longest_contig.fasta"
         ;;
     "microsynth")
         ASSEMBLY_FILE="${BASE_DIR}/00_raw_data_microsynth/${SAMPLE}_results/${SAMPLE}_results/Assembly/${SAMPLE}.fasta"
@@ -44,7 +50,6 @@ case $ASSEMBLY_TYPE in
 esac
 
 # Create output directory with assembly type subfolder
-ANNOTATION_OUTPUT_DIR="${BASE_DIR}/05_annotation"
 mkdir -p "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
 
 if [ ! -f "$ASSEMBLY_FILE" ]; then
