@@ -20,6 +20,7 @@ FINAL_ASSEMBLY_DIR="${BASE_DIR}/06_trimmed_assembly"
 # Database paths
 PFAM_DB="${BASE_DIR}/databases/Pfam-A.hmm.gz"
 ORF_DATABASE_DIR="/home/ubuntu/data-volume/001_Raw_Data/Databases/ORF"
+PROTEIN_DATABASE_DIR="/home/ubuntu/data-volume/001_Raw_Data/Databases/Proteins"
 VIRAL_DB_DIR="${BASE_DIR}/databases/viral"
 VIRAL_REF_FASTA="${VIRAL_DB_DIR}/parapoxvirus_references.fasta"
 
@@ -61,7 +62,7 @@ CANU_MEMORY="50G"
 
 # ORF analysis paths
 ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
-ORF_PROTEIN_FILE="${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}/${SAMPLE}_ORFs_proteins.faa"
+ORF_PROTEIN_FILE="${ORF_PROTEIN_DATABASE_DIR}/${SAMPLE}_protein.faa"
 
 # ITR analysis output
 ITR_ANALYSIS_DIR="${BASE_DIR}/05_itr_analysis"

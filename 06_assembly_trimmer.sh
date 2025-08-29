@@ -36,7 +36,7 @@ case $ASSEMBLY_TYPE in
         ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out/polished_assembly.fasta"
         ;;
     "canu")
-        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_out/${SAMPLE}.contigs.fasta"
+        ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_out/${SAMPLE}.longest_contig.fasta"
         ;;
     "canu_ultra")
         ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_ultra_output/${SAMPLE}.longest_contig.fasta"
@@ -191,13 +191,13 @@ if [ ! -z "$cut_end" ]; then
 fi
 
 # Calculate final genome length
-crs_length=20  # Approximate CRS length
-final_start=$((cut_start + crs_length + 1))
+crs_length=1000  #TODO set final value
+final_start=$((cut_start - crs_length + 1))
 if [ -z "$cut_start" ]; then
     final_start=1
 fi
 
-final_end=$((cut_end - 1))
+final_end=$((cut_end + crs_length - 1))
 if [ -z "$cut_end" ]; then
     final_end=$ASSEMBLY_LENGTH
 fi
@@ -218,7 +218,7 @@ full_sequence=$(grep -v "^>" "$ASSEMBLY_FILE" | tr -d '\n')
 trimmed_sequence=$(echo "$full_sequence" | cut -c${final_start}-${final_end})
 
 # Create output file
-output_file="${OUTPUT_DIR}/${SAMPLE}_${ASSEMBLY_TYPE}_trimmed.fasta"
+output_file="${OUTPUT_DIR}/${SAMPLE}_${ASSEMBLY_TYPE}_trimmed_${crs_length}.fasta"
 header=$(head -n1 "$ASSEMBLY_FILE")
 
 echo "$header [trimmed ${final_start}-${final_end}]" > "$output_file"

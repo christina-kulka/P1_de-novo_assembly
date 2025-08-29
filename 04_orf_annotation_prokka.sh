@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Prokka Annotation Script (Step 5)
+# Prokka Annotation Script (Step 5) - Enhanced ORF Naming
 # Usage: ./05_annotation_prokka.sh SAMPLE_NAME
 
 # Source configuration
@@ -34,7 +34,7 @@ case $ASSEMBLY_TYPE in
         ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/canu_ultra_output/${SAMPLE}.longest_contig.fasta"
         ;;
     "canu_ultra_trimmed")
-        ASSEMBLY_FILE="${FINAL_ASSEMBLY_DIR}/${SAMPLE}/canu_ultra/${SAMPLE}_canu_ultra_trimmed.fasta"
+        ASSEMBLY_FILE="${FINAL_ASSEMBLY_DIR}/${SAMPLE}/canu_ultra/${SAMPLE}_canu_ultra_trimmed_1000.fasta" #TODO fix this
         ;;
     "canu_super")
         ASSEMBLY_FILE="${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/super_canu_out/${SAMPLE}.longest_contig.fasta"
@@ -68,10 +68,6 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate $CONDA_ENV_PROKKA
 
 cd "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
-
-# Find the corresponding ORF reference file for this sample
-ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
-ORF_PROTEIN_FILE="${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}/${SAMPLE}_ORFs_proteins.faa"
 
 # Check if ORF reference exists and convert to proteins
 if [ ! -f "$ORF_REFERENCE_FILE" ]; then
@@ -110,12 +106,149 @@ prokka \
 
 echo "Prokka annotation completed!"
 
-# Show annotation summary
-if [ -f "${SAMPLE}.txt" ]; then
-    echo "=== ANNOTATION SUMMARY ==="
-    cat "${SAMPLE}.txt"
-    echo "Key output files:"
-    echo "  - ${SAMPLE}.gff: Gene annotations"
-    echo "  - ${SAMPLE}.faa: Protein sequences"
-    echo "  - ${SAMPLE}.gbk: GenBank format"
+# === Enhanced ORF ID mapping using BLAST + awk ===
+if [ -f "${SAMPLE}.gff" ] && [ -f "$ORF_PROTEIN_FILE" ] && command -v blastp &> /dev/null; then
+    echo "Mapping Prokka genes to reference ORFs..."
+    
+    # Create BLAST database
+    makeblastdb -in "$ORF_PROTEIN_FILE" -dbtype prot -out orf_db -logfile /dev/null
+    
+    # BLAST Prokka proteins against ORF database
+    blastp -query "${SAMPLE}.faa" -db orf_db \
+        -outfmt "6 qseqid sseqid pident evalue" \
+        -max_target_seqs 1 -evalue 1e-3 -num_threads $THREADS > blast_results.tmp
+    
+    # Create mapping file (only high-confidence matches: >70% identity)
+    awk '$3 >= 70 && $4 <= 1e-3 {print $1"\t"$2"\t"$3}' blast_results.tmp > gene_to_orf_map.txt
+    
+    # Count mappings
+    MAPPED_GENES=$(wc -l < gene_to_orf_map.txt)
+    echo "Found $MAPPED_GENES high-confidence ORF mappings"
+    
+    if [ $MAPPED_GENES -gt 0 ]; then
+        # Backup original GFF
+        cp "${SAMPLE}.gff" "${SAMPLE}.gff.backup"
+        
+        # Update GFF with ORF names using awk
+        awk -F'\t' '
+        BEGIN {
+            # Read the mapping file
+            while ((getline line < "gene_to_orf_map.txt") > 0) {
+                split(line, fields, "\t")
+                map[fields[1]] = fields[2]
+                identity[fields[1]] = fields[3]
+            }
+            close("gene_to_orf_map.txt")
+        }
+        /^#/ || NF != 9 { print; next }  # Print headers and non-feature lines as-is
+        $3 == "CDS" {
+            # Extract locus_tag from attributes
+            if (match($9, /locus_tag=([^;]+)/, locus)) {
+                locus_tag = locus[1]
+                if (locus_tag in map) {
+                    orf_name = map[locus_tag]
+                    # Replace locus_tag and gene with ORF name
+                    gsub(/locus_tag=[^;]+/, "locus_tag=" orf_name, $9)
+                    gsub(/gene=[^;]+/, "gene=" orf_name, $9)
+                    # Add gene if it doesnt exist
+                    if ($9 !~ /gene=/) {
+                        $9 = $9 ";gene=" orf_name
+                    }
+                    # Update product if its generic
+                    if ($9 ~ /product=hypothetical protein/) {
+                        gsub(/product=hypothetical protein/, "product=" orf_name " (" identity[locus_tag] "% id)", $9)
+                    }
+                }
+            }
+        }
+        { print }
+        ' "${SAMPLE}.gff.backup" > "${SAMPLE}.gff"
+        
+        # Update protein sequences (FAA file) with ORF names
+        echo "Updating protein sequences with ORF names..."
+        cp "${SAMPLE}.faa" "${SAMPLE}.faa.backup"
+        
+        # Update FAA headers using the mapping
+        awk '
+        BEGIN {
+            # Read the mapping file
+            while ((getline line < "gene_to_orf_map.txt") > 0) {
+                split(line, fields, "\t")
+                map[fields[1]] = fields[2]
+            }
+            close("gene_to_orf_map.txt")
+        }
+        /^>/ {
+            # Extract gene ID from header
+            if (match($0, />([^ ]+)/, gene)) {
+                gene_id = gene[1]
+                if (gene_id in map) {
+                    # Replace gene ID with ORF name in header
+                    gsub(gene_id, map[gene_id], $0)
+                }
+            }
+        }
+        { print }
+        ' "${SAMPLE}.faa.backup" > "${SAMPLE}.faa"
+        
+        # Update GenBank file if AGAT is available
+        if command -v agat_sp_gff2gbk.pl &> /dev/null; then
+            echo "Regenerating GenBank file with ORF names..."
+            agat_sp_gff2gbk.pl --gff "${SAMPLE}.gff" --fasta "${SAMPLE}.fna" -o "${SAMPLE}.gbk" 2>/dev/null
+            
+            # Verify GBK file was created successfully
+            if [ -f "${SAMPLE}.gbk" ]; then
+                echo "GenBank file successfully updated with ORF names"
+            else
+                echo "Warning: GenBank file generation failed"
+            fi
+        else
+            echo "Warning: AGAT not available - GenBank file not updated"
+            echo "Install with: conda install -c bioconda agat"
+        fi
+        
+        # Create mapping report
+        echo "=== ORF MAPPING REPORT ===" > "${SAMPLE}_orf_mapping.txt"
+        echo "Sample: $SAMPLE" >> "${SAMPLE}_orf_mapping.txt"
+        echo "Genes mapped to ORFs: $MAPPED_GENES" >> "${SAMPLE}_orf_mapping.txt"
+        echo "" >> "${SAMPLE}_orf_mapping.txt"
+        echo "Prokka_Gene\tORF_Name\tIdentity%" >> "${SAMPLE}_orf_mapping.txt"
+        cat gene_to_orf_map.txt >> "${SAMPLE}_orf_mapping.txt"
+        
+        echo "Successfully updated annotations with ORF names!"
+        echo "Mapping report: ${SAMPLE}_orf_mapping.txt"
+        
+        # Clean up
+        rm -f blast_results.tmp gene_to_orf_map.txt orf_db.*
+    else
+        echo "No high-confidence ORF mappings found. Keeping original Prokka annotations."
+        rm -f blast_results.tmp gene_to_orf_map.txt orf_db.*
+    fi
+    
+elif [ ! -f "$ORF_PROTEIN_FILE" ]; then
+    echo "Skipping ORF mapping: No ORF protein file found"
+elif ! command -v blastp &> /dev/null; then
+    echo "Skipping ORF mapping: BLAST not available"
+else
+    echo "Skipping ORF mapping: Required files not found"
 fi
+
+# Show annotation summary
+echo ""
+echo "=== ANNOTATION SUMMARY ==="
+if [ -f "${SAMPLE}.txt" ]; then
+    cat "${SAMPLE}.txt"
+fi
+
+echo ""
+echo "=== OUTPUT FILES ==="
+echo "  - ${SAMPLE}.gff: Gene annotations (with ORF names)"
+echo "  - ${SAMPLE}.gbk: GenBank file (with ORF names)"  
+echo "  - ${SAMPLE}.faa: Protein sequences (with ORF names)"
+echo "  - ${SAMPLE}.fna: Nucleotide sequences"
+if [ -f "${SAMPLE}_orf_mapping.txt" ]; then
+    echo "  - ${SAMPLE}_orf_mapping.txt: ORF mapping report"
+fi
+
+echo ""
+echo "Annotation pipeline completed!"
