@@ -133,7 +133,10 @@ echo "Prokka completed successfully!"
 # Restore ORF names using existing script
 if [ -f "${SCRIPT_DIR}/4b_restore_orf_names.py" ]; then
     echo "Restoring ORF names..."
-    python3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME" "$ORF_PROTEIN_FILE"
+    python3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME"
+    #"$ORF_PROTEIN_FILE"
+    # TODO change this back when using the pipeline!
+    #python3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME" "$ORF_PROTEIN_FILE" "$TEMP_DIR"
 
     # Use the ORF-named file if it was created
     if [ -f "${SAMPLE_NAME}.orf_named.gbk" ]; then
@@ -144,6 +147,11 @@ if [ -f "${SCRIPT_DIR}/4b_restore_orf_names.py" ]; then
 else
     echo "Warning: 4b_restore_orf_names.py not found, using Prokka output as-is"
     FINAL_GBK="${SAMPLE_NAME}.gbk"
+fi
+
+cp "${SAMPLE_NAME}".* /tmp/ 2>/dev/null
+if [ -f "${SAMPLE_NAME}.orf_named.gbk" ]; then
+    cp "${SAMPLE_NAME}.orf_named.gbk" /tmp/
 fi
 
 # Copy result to final location

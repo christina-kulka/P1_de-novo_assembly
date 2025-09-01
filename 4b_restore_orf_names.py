@@ -2,7 +2,7 @@
 
 """
 Standalone script to restore ORF names in Prokka output files.
-Usage: python3 restore_orf_names.py SAMPLE_NAME ORIGINAL_ORF_FILE
+Usage: python3 restore_orf_names.py SAMPLE_NAME ORIGINAL_ORF_FILE [OUTPUT_DIR]
 """
 
 import sys
@@ -11,21 +11,31 @@ import os
 from pathlib import Path
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python3 restore_orf_names.py SAMPLE_NAME ORIGINAL_ORF_FILE")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print("Usage: python3 restore_orf_names.py SAMPLE_NAME ORIGINAL_ORF_FILE [OUTPUT_DIR]")
         print("Example: python3 restore_orf_names.py S1-Japan /path/to/S1-Japan_protein.fasta")
+        print("Example: python3 restore_orf_names.py S1-Japan /path/to/S1-Japan_protein.fasta /tmp")
         sys.exit(1)
     
     sample_name = sys.argv[1]
     orf_file = sys.argv[2]
-
-    annotation_path = f"/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/04_annotation/{sample_name}/canu_ultra_trimmed/"
+    
+    # Optional output directory (default to current directory)
+    if len(sys.argv) == 4:
+        output_dir = sys.argv[3].rstrip('/') + '/'
+        print(f"Using output directory: {sys.argv[3]}")
+    else:
+        output_dir = ""
+        print("Using current directory")
+    
+    print(f"Processing sample: {sample_name}")
+    print(f"Original ORF file: {orf_file}")
     
     # Define expected Prokka output files
-    prokka_faa = f"{annotation_path}{sample_name}.faa"
-    prokka_gff = f"{annotation_path}{sample_name}.gff"
-    prokka_gbk = f"{annotation_path}{sample_name}.gbk"
-
+    prokka_faa = f"{output_dir}{sample_name}.faa"
+    prokka_gff = f"{output_dir}{sample_name}.gff"
+    prokka_gbk = f"{output_dir}{sample_name}.gbk"
+    
     # Check if required files exist
     required_files = [orf_file, prokka_faa, prokka_gff]
     missing_files = [f for f in required_files if not os.path.exists(f)]
@@ -33,9 +43,6 @@ def main():
     if missing_files:
         print(f"Error: Missing required files: {missing_files}")
         sys.exit(1)
-    
-    print(f"Processing sample: {sample_name}")
-    print(f"Original ORF file: {orf_file}")
     
     # Read the original ORF protein file
     print("Reading original ORF sequences...")
@@ -83,7 +90,7 @@ def main():
     
     # Update GFF file with ORF names
     print("Updating GFF file...")
-    updated_gff = f"{annotation_path}{sample_name}.orf_named.gff"
+    updated_gff = f"{output_dir}{sample_name}.orf_named.gff"
     with open(prokka_gff, 'r') as infile, open(updated_gff, 'w') as outfile:
         for line in infile:
             if line.startswith('#') or '\tCDS\t' not in line:
@@ -108,7 +115,7 @@ def main():
     
     # Update FAA file with ORF names
     print("Updating protein file...")
-    updated_faa = f"{annotation_path}{sample_name}.orf_named.faa"
+    updated_faa = f"{output_dir}{sample_name}.orf_named.faa"
     with open(prokka_faa, 'r') as infile, open(updated_faa, 'w') as outfile:
         for line in infile:
             if line.startswith('>'):
@@ -127,7 +134,7 @@ def main():
     # Update GenBank file with ORF names
     if os.path.exists(prokka_gbk):
         print("Updating GenBank file...")
-        updated_gbk = f"{annotation_path}{sample_name}.orf_named.gbk"
+        updated_gbk = f"{output_dir}{sample_name}.orf_named.gbk"
         last_locus = None
         
         with open(prokka_gbk, 'r') as infile, open(updated_gbk, 'w') as outfile:
@@ -158,10 +165,11 @@ def main():
     
     # Create mapping report
     print("Creating mapping report...")
-    mapping_file = f"{sample_name}_orf_mapping.txt"
+    mapping_file = f"{output_dir}{sample_name}_orf_mapping.txt"
     with open(mapping_file, 'w') as f:
         f.write(f"# ORF Mapping Report for {sample_name}\n")
         f.write(f"# Original ORF file: {orf_file}\n")
+        f.write(f"# Output directory: {output_dir if output_dir else 'current directory'}\n")
         f.write(f"# Total ORFs in original file: {len(orf_sequences)}\n")
         f.write(f"# Total sequences from Prokka: {len(prokka_sequences)}\n")
         f.write(f"# Successfully mapped: {len(locus_to_orf)}\n")
@@ -181,8 +189,8 @@ def main():
     print(f"✓ Updated files:")
     print(f"  - {updated_gff} (GFF with ORF names)")
     print(f"  - {updated_faa} (proteins with ORF names)")
-    if os.path.exists(f"{sample_name}.orf_named.gbk"):
-        print(f"  - {sample_name}.orf_named.gbk (GenBank with ORF names)")
+    if os.path.exists(f"{output_dir}{sample_name}.orf_named.gbk"):
+        print(f"  - {output_dir}{sample_name}.orf_named.gbk (GenBank with ORF names)")
     print(f"  - {mapping_file} (mapping report)")
     
     print(f"\nMapping success: {len(locus_to_orf)}/{len(prokka_sequences)} sequences ({len(locus_to_orf)/len(prokka_sequences)*100:.1f}%)")
