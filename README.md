@@ -1,26 +1,8 @@
-whole genome assembly of ORVF genome
-8 samples in total
-two different conditions (4 samples each): wt vs modified ORV
+# Objective: De-novo Assembly of different ORF vector genomes.
 
-microsynth nanopore sequencing (md5 download OK)
-provide fastq files and did some pre-filtering and QC reporting
+Sequencing done by Microsynth.
+Assembly for vectors B006, B021, B032, B044, D1701, S1-Japan.
 
-process samples separately and see how it goes. if i need more
-depth i can combine the 4 samples of each condition
 
-1. quality control
-2. data filtering
-3. initial assembly
-4. contamination detection (blast)
-5. filter reads
-6. clean assembly
-7. assembly polishing
-8. ITR handling
 
-![image](assembly_plan.png)
-
-quality control of samples (done by microsynth, I want to generate one
-big csv for easy comparison between samples))
-
-data filtering (partly done by microsynth)
-will 
+# How to run this

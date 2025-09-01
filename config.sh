@@ -62,7 +62,7 @@ CANU_MEMORY="50G"
 
 # ORF analysis paths
 ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
-ORF_PROTEIN_FILE="${ORF_PROTEIN_DATABASE_DIR}/${SAMPLE}_protein.faa"
+ORF_PROTEIN_FILE="${PROTEIN_DATABASE_DIR}/${SAMPLE}_protein.fasta"
 
 # ITR analysis output
 ITR_ANALYSIS_DIR="${BASE_DIR}/05_itr_analysis"
@@ -73,7 +73,5 @@ HAIRPIN_MIN_LENGTH="50"
 HAIRPIN_MAX_LENGTH="100"
 HAIRPIN_SEARCH_REGION="3000"  # bp from contig ends to search
 
-# ORF reference file (already defined but making sure)
-ORF_REFERENCE_FILE="${ORF_DATABASE_DIR}/${SAMPLE}_ORFs.fasta"
 
 PROXIMITY_THRESHOLD=500

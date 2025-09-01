@@ -191,7 +191,7 @@ if [ ! -z "$cut_end" ]; then
 fi
 
 # Calculate final genome length
-crs_length=1000  #TODO set final value
+crs_length=150  #TODO set final value
 final_start=$((cut_start - crs_length + 1))
 if [ -z "$cut_start" ]; then
     final_start=1
@@ -225,7 +225,7 @@ echo "$header [trimmed ${final_start}-${final_end}]" > "$output_file"
 echo "$trimmed_sequence" >> "$output_file"
 
 # Create summary report
-summary_file="${OUTPUT_DIR}/trimming_summary.txt"
+summary_file="${OUTPUT_DIR}/trimming_summary_${crs_length}.txt"
 echo "# Genome Trimming Summary" > "$summary_file"
 echo "Sample: $SAMPLE" >> "$summary_file"
 echo "Assembly type: $ASSEMBLY_TYPE" >> "$summary_file"
