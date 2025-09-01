@@ -14,7 +14,6 @@ def main():
     
     input_file = sys.argv[1]
     output_file = sys.argv[2]
-    annotation_path = "/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/04_annotation/D1701/canu_ultra_trimmed/"
 
     print(f"Formatting {input_file} -> {output_file}")
     
