@@ -19,7 +19,7 @@ fi
 mkdir -p "${QC_OUTPUT_DIR}/${SAMPLE}"
 
 # Activate conda environment
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate $CONDA_ENV_QC
 
 echo "Active conda environment: $CONDA_DEFAULT_ENV"

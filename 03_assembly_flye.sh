@@ -33,7 +33,7 @@ echo "Input clean reads: $CLEAN_READS"
 echo "Output directory: ${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/flye_out"
 
 # Activate conda environment and run Flye
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate $CONDA_ENV_FLYE
 
 echo "Running Flye assembly..."

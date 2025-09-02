@@ -49,7 +49,7 @@ case $ASSEMBLY_TYPE in
         ;;
 esac
 
-ORF_PROTEIN_FILE="/home/ubuntu/data-volume/001_Raw_Data/Databases/Proteins/${SAMPLE}_protein.fasta"
+ORF_PROTEIN_FILE="${PROTEIN_DATABASE_DIR}/${SAMPLE}_protein.fasta"
 
 # Create output directory
 mkdir -p "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"
@@ -66,7 +66,7 @@ echo "Assembly type: $ASSEMBLY_TYPE"
 echo "Assembly file: $ASSEMBLY_FILE"
 
 # Activate conda environment
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate $CONDA_ENV_PROKKA
 
 cd "${ANNOTATION_OUTPUT_DIR}/${SAMPLE}/${ASSEMBLY_TYPE}"

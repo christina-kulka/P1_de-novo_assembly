@@ -35,14 +35,14 @@ echo "Input raw reads: $RAW_READS"
 echo "Output directory: ${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 
 # Activate miniasm environment
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate $CONDA_ENV_MINIASM
 
 cd "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/miniasm_out"
 
 # Step 1: Generate overlaps with minimap2
 echo "Step 1: Finding overlaps with minimap2..."
-minimap2 -x ava-ont -t $THREADS -K 1G "$RAW_READS" "$RAW_READS" > overlaps.paf
+$MINIMAP2 -x ava-ont -t $THREADS -K 1G "$RAW_READS" "$RAW_READS" > overlaps.paf
 
 # Step 2: Run miniasm assembly
 echo "Step 2: Running miniasm assembly..."
@@ -54,7 +54,7 @@ awk '/^S/{print ">"$2"\n"$3}' assembly.gfa > assembly.fasta
 
 # Step 4: Polish with minipolish
 echo "Step 4: Polishing with minipolish..."
-minipolish --threads $THREADS "$RAW_READS" assembly.gfa > polished.gfa
+$MINIPOLISH --threads $THREADS "$RAW_READS" assembly.gfa > polished.gfa
 awk '/^S/{print ">"$2"\n"$3}' polished.gfa > polished_assembly.fasta
 
 echo "Miniasm assembly completed!"

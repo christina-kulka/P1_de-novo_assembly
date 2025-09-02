@@ -36,7 +36,7 @@ echo "Input clean reads: $CLEAN_READS"
 echo "Output directory: ${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/viral_verification"
 
 # Activate conda environment
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate $CONDA_ENV_QC
 
 # Check if Pfam database exists
@@ -49,7 +49,7 @@ fi
 echo "Running viral verification with viralVerify..."
 
 # Run viralVerify to confirm viral identity
-viralverify -f "$MINIASM_DIR/polished_assembly.fasta" \
+$VIRALVERIFY -f "$MINIASM_DIR/polished_assembly.fasta" \
            --hmm "$PFAM_DB" \
            -o "${ASSEMBLY_OUTPUT_DIR}/${SAMPLE}/viral_verification"
 

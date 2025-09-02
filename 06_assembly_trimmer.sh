@@ -11,7 +11,7 @@ source "${SCRIPT_DIR}/config.sh"
 # Parse command line arguments
 SAMPLE=$1
 ASSEMBLY_TYPE=${2:-"canu_super"}
-MIN_DISTANCE=${3:-10000}  # Minimum distance between CRS positions to consider them at different ends
+MIN_DISTANCE=${3:-$MIN_CRS_DISTANCE}  # Minimum distance between CRS positions to consider them at different ends
 
 if [ -z "$SAMPLE" ]; then
     echo "Usage: $0 SAMPLE_NAME [ASSEMBLY_TYPE] [MIN_DISTANCE]"
@@ -19,7 +19,7 @@ if [ -z "$SAMPLE" ]; then
     echo "Arguments:"
     echo "  SAMPLE_NAME   - Sample identifier (e.g., B006)"
     echo "  ASSEMBLY_TYPE - Assembly type (default: canu_super)" 
-    echo "  MIN_DISTANCE  - Minimum distance between CRS to consider different ends (default: 10000bp)"
+    echo "  MIN_DISTANCE  - Minimum distance between CRS to consider different ends (default: ${MIN_CRS_DISTANCE}bp)"
     echo ""
     echo "Examples:"
     echo "  $0 B006"
@@ -191,7 +191,7 @@ if [ ! -z "$cut_end" ]; then
 fi
 
 # Calculate final genome length
-crs_length=150  #TODO set final value
+crs_length=$CRS_LENGTH
 final_start=$((cut_start - crs_length + 1))
 if [ -z "$cut_start" ]; then
     final_start=1

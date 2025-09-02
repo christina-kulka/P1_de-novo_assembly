@@ -18,7 +18,7 @@ fi
 # Create output directory for this sample
 mkdir -p "${PREPROC_OUTPUT_DIR}/${SAMPLE}"
 
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate $CONDA_ENV_QC
 
 # Find the raw fastq file from the original data
@@ -70,7 +70,7 @@ INPUT_FOR_OUTLIER="${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean.fastq"
 
 # Step 4: Remove extreme outlier reads
 echo "Step 4: Filtering extreme outlier reads..."
-seqkit seq -M 200000 "$INPUT_FOR_OUTLIER" \
+$SEQKIT seq -M 200000 "$INPUT_FOR_OUTLIER" \
     > "${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean_final.fastq"
 
 echo "Final processed reads: ${PREPROC_OUTPUT_DIR}/${SAMPLE}/${SAMPLE}_super_clean_final.fastq"

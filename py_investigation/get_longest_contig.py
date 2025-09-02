@@ -2,12 +2,12 @@
 
 import os
 from Bio import SeqIO
+from config_reader import read_config
 
-# Sample list
-samples = ["B006", "B021", "B032", "B044", "D1701", "S1-Japan"]
-
-# Base path
-base_path = "/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly/03_assembly"
+# Read configuration
+config = read_config()
+samples = config.get('SAMPLE_LIST', 'B006 B021 B032 B044 D1701 S1-Japan').split()
+base_path = f"{config.get('BASE_DIR', '/home/ubuntu/data-volume/001_Raw_Data/Whole_Genome_Seq/ORFV_genome_assembly/P1_de-novo_assembly')}/03_assembly"
 
 for sample in samples:
     input_file = f"{base_path}/{sample}/canu_out/{sample}.contigs.fasta"

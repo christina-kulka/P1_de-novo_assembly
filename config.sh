@@ -33,6 +33,17 @@ KRAKEN2_BUILD="/home/ubuntu/miniconda3/bin/kraken2-build"
 BLASTN="/home/ubuntu/miniconda3/envs/itr_analysis/bin/blastn"
 MAKEBLASTDB="/home/ubuntu/miniconda3/envs/itr_analysis/bin/makeblastdb"
 
+# Additional tools (called directly)
+MINIMAP2="minimap2"
+MINIPOLISH="minipolish" 
+VIRALVERIFY="viralverify"
+RNAFOLD="RNAfold"
+SEQKIT="seqkit"
+PYTHON3="python3"
+
+# Conda setup
+CONDA_SETUP_PATH="~/miniconda3/etc/profile.d/conda.sh"
+
 # Conda environment names
 CONDA_ENV_QC="viralFlye"
 CONDA_ENV_FLYE="flye"
@@ -73,5 +84,18 @@ HAIRPIN_MIN_LENGTH="50"
 HAIRPIN_MAX_LENGTH="100"
 HAIRPIN_SEARCH_REGION="3000"  # bp from contig ends to search
 
+# Analysis parameters
+CRS_LENGTH="150"  # Length of CRS region for trimming
+MIN_CRS_DISTANCE="10000"  # Minimum distance between CRS positions
+TERMINAL_ANALYSIS_SIZE="5000"  # Size for terminal region analysis
+EXPECTED_GENOME_SIZE="138000"  # Expected final genome size
+OVERLAP_SEARCH_SIZES="1000 2000 5000 10000"  # Overlap sizes for analysis
+TERMINAL_DISTANCE="40000"  # Distance from ends to consider terminal ORFs
+
+# Sample list (space-separated)
+SAMPLE_LIST="B006 B021 B032 B044 D1701 S1-Japan"
+
+# Annotation parameters
+MIN_FEATURE_OVERLAP="50"  # Minimum overlap for feature collision detection in bp
 
 PROXIMITY_THRESHOLD=500

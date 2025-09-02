@@ -103,11 +103,11 @@ echo ">Right_terminal_${HAIRPIN_SEARCH_REGION}bp" > right_terminal_formatted.fas
 echo $(cat right_terminal.fasta) >> right_terminal_formatted.fasta
 
 # Search for hairpin structures using RNAfold
-echo "Searching for hairpin structures with RNAfold..."
+echo "Searching for hairpin structures with $RNAFOLD..."
 echo "=== HAIRPIN ANALYSIS ===" > hairpin_report.txt
 echo "Search parameters:" >> hairpin_report.txt
 echo "  Search region: $HAIRPIN_SEARCH_REGION bp from each end" >> hairpin_report.txt
-echo "  Tool: Vienna RNAfold" >> hairpin_report.txt
+echo "  Tool: Vienna $RNAFOLD" >> hairpin_report.txt
 echo "" >> hairpin_report.txt
 
 # Search for telomere resolution sequence (CRS) patterns
@@ -192,7 +192,7 @@ else
             
             if [ $at_diff -le 15 ]; then
                 # Test if this sequence can form a hairpin structure
-                result=$(echo "$candidate_seq" | RNAfold --noPS 2>/dev/null)
+                result=$(echo "$candidate_seq" | $RNAFOLD --noPS 2>/dev/null)
                 structure=$(echo "$result" | tail -n1 | awk '{print $1}')
                 energy=$(echo "$result" | tail -n1 | awk '{print $2}' | tr -d '()')
                 stem_count=$(echo "$structure" | grep -o '(' | wc -l)
@@ -251,13 +251,13 @@ fi
 
 # Predict structure for reference hairpin
 echo "Structure prediction for reference hairpin:" >> hairpin_report.txt
-echo "$known_hairpin" | RNAfold --noPS >> hairpin_report.txt 2>/dev/null
+echo "$known_hairpin" | $RNAFOLD --noPS >> hairpin_report.txt 2>/dev/null
 echo "" >> hairpin_report.txt
 
 # Predict structure for any found patterns
 if [ ! -z "$position" ] || [ ! -z "$positions" ]; then
     echo "Structure prediction for reference hairpin:" >> hairpin_report.txt
-    echo "$known_hairpin" | RNAfold --noPS >> hairpin_report.txt 2>/dev/null
+    echo "$known_hairpin" | $RNAFOLD --noPS >> hairpin_report.txt 2>/dev/null
 fi
 echo "" >> hairpin_report.txt
 

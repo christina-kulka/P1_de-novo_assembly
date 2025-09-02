@@ -14,11 +14,9 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
-# Get script directory for helper scripts
+# Get script directory and source configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Define paths
-PROTEIN_DATABASE_DIR="/home/ubuntu/data-volume/001_Raw_Data/Databases/Proteins"
+source "${SCRIPT_DIR}/config.sh"
 ORF_PROTEIN_FILE="${PROTEIN_DATABASE_DIR}/${SAMPLE_NAME}_protein.fasta"
 PROKKA_PROTEIN_FILE="${PROTEIN_DATABASE_DIR}/${SAMPLE_NAME}_protein_prokka.faa"
 
@@ -46,7 +44,7 @@ echo "Working in: $TEMP_DIR"
 INPUT_FASTA="${TEMP_DIR}/${SAMPLE_NAME}_input.fasta"
 
 # Extract sequence from input file (works for .dna, .gbk, .fasta)
-python3 -c "
+$PYTHON3 -c "
 from Bio import SeqIO
 import sys
 
@@ -86,7 +84,7 @@ fi
 if [ ! -f "$PROKKA_PROTEIN_FILE" ]; then
     echo "Creating pre-formatted protein file..."
     if [ -f "${SCRIPT_DIR}/4a_format_proteins.py" ]; then
-        python3 "${SCRIPT_DIR}/4a_format_proteins.py" "$ORF_PROTEIN_FILE" "$PROKKA_PROTEIN_FILE"
+        $PYTHON3 "${SCRIPT_DIR}/4a_format_proteins.py" "$ORF_PROTEIN_FILE" "$PROKKA_PROTEIN_FILE"
     else
         echo "Error: 4a_format_proteins.py not found in $SCRIPT_DIR"
         rm -rf "$TEMP_DIR"
@@ -97,7 +95,7 @@ fi
 echo "Using protein file: $PROKKA_PROTEIN_FILE"
 
 # Activate conda environment
-source ~/miniconda3/etc/profile.d/conda.sh
+source $CONDA_SETUP_PATH
 conda activate prokka
 
 # Change to temp directory
@@ -114,7 +112,7 @@ prokka \
     --prefix "$SAMPLE_NAME" \
     --outdir . \
     --force \
-    --cpus 25 \
+    --cpus $THREADS \
     --evalue 1e-6 \
     --coverage 50 \
     --norrna \
@@ -133,10 +131,10 @@ echo "Prokka completed successfully!"
 # Restore ORF names using existing script
 if [ -f "${SCRIPT_DIR}/4b_restore_orf_names.py" ]; then
     echo "Restoring ORF names..."
-    python3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME"
+    $PYTHON3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME"
     #"$ORF_PROTEIN_FILE"
     # TODO change this back when using the pipeline!
-    #python3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME" "$ORF_PROTEIN_FILE" "$TEMP_DIR"
+    #$PYTHON3 "${SCRIPT_DIR}/4b_restore_orf_names.py" "$SAMPLE_NAME" "$ORF_PROTEIN_FILE" "$TEMP_DIR"
 
     # Use the ORF-named file if it was created
     if [ -f "${SAMPLE_NAME}.orf_named.gbk" ]; then
