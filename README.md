@@ -1,4 +1,4 @@
-# P1 De-novo Assembly Pipeline
+# P1 De-novo Assembly
 
 This repository contains scripts for de-novo genome assembly of ORFV (Orf virus) samples using Oxford Nanopore long-read sequencing data. The pipeline supports multiple assembly approaches and includes comprehensive analysis tools.
 
@@ -44,7 +44,7 @@ Run these scripts in order for each sample:
 ./03b_viralverify.sh SAMPLE_NAME
 
 # Step 5: ORF Annotation
-./04_orf_annotation_prokka.sh SAMPLE_NAME [ASSEMBLY_TYPE]
+./04_orf_annotation.sh SAMPLE_NAME [ASSEMBLY_TYPE]
 
 # Step 6: ITR and ORF Analysis
 ./05_itr_orf_eval.sh SAMPLE_NAME [ASSEMBLY_TYPE]
@@ -91,11 +91,17 @@ Verifies that assemblies contain viral sequences using viralVerify.
 - **Output**: Viral classification results in `03_assembly/SAMPLE/viral_verification/`
 - **Usage**: `./03b_viralverify.sh SAMPLE_NAME`
 
-#### `04_orf_annotation_prokka.sh`
-Annotates genome assemblies with ORF information using Prokka.
+#### `04_orf_annotation.sh`
+Main ORF annotation script that annotates genome assemblies with ORF information using direct sequence matching.
 - **Assembly types**: miniasm_viral, miniasm_raw, canu, canu_ultra, canu_super, microsynth
 - **Output**: Annotations in `04_annotation/SAMPLE/ASSEMBLY_TYPE/`
-- **Usage**: `./04_orf_annotation_prokka.sh SAMPLE_NAME [ASSEMBLY_TYPE]`
+- **Usage**: `./04_orf_annotation.sh SAMPLE_NAME [ASSEMBLY_TYPE]`
+- **Function**: Automatically calls `improved_orf_annotator.py` to perform direct sequence matching and create GenBank annotations
+- **Features**: 
+  - No BLAST coordinate issues (uses direct sequence matching)
+  - Automatic strand selection (F/R variants)
+  - Generates multiple output formats (.gbk, .gff, .faa, .fna)
+  - Quality checking and annotation statistics
 
 #### `05_itr_orf_eval.sh`
 Analyzes assemblies for ITR (Inverted Terminal Repeats) and ORF content.
@@ -153,7 +159,7 @@ For production assemblies using optimized Canu parameters:
 ./01_quality_control.sh SAMPLE_NAME
 ./02_preprocessing.sh SAMPLE_NAME
 ./03_assembly_canu.sh SAMPLE_NAME
-./04_orf_annotation_prokka.sh SAMPLE_NAME canu_ultra
+./04_orf_annotation.sh SAMPLE_NAME canu_ultra
 ./05_itr_orf_eval.sh SAMPLE_NAME canu_ultra
 ./06_assembly_trimmer.sh SAMPLE_NAME canu_ultra
 ```
@@ -174,33 +180,35 @@ Automated script that runs the complete final Canu assembly pipeline.
 
 For annotating existing genome files (e.g., .dna files from colleagues) with ORF information:
 
-### Scripts
+### Main Script
 
-#### `prokka_annotation_proposal.sh`
-Annotates existing genome files with ORF information using Prokka and custom ORF databases.
-- **Input**: Genome file (.dna, .gbk, or .fasta format)
-- **Output**: GenBank file with ORF annotations
-- **Usage**: `./prokka_annotation_proposal.sh INPUT_FILE SAMPLE_NAME OUTPUT_FILE`
-- **Example**: `./prokka_annotation_proposal.sh genome.dna B006 annotated_output.gbk`
+#### `improved_retrospective_annotate.sh`
+Main script for retrospective annotation that performs complete ORF annotation using direct sequence matching.
+- **Input**: Sample name only (automatically finds `proposed_SAMPLE_final_map.[dna|fasta|fa]` in proposal directory)
+- **Output**: `proposed_SAMPLE_annotated_improved.gbk` in proposal directory
+- **Usage**: `./improved_retrospective_annotate.sh SAMPLE_NAME`
+- **Example**: `./improved_retrospective_annotate.sh B021`
+- **Function**: Automatically calls `improved_orf_annotator.py` to perform direct sequence matching and annotation
+- **Features**: 
+  - No BLAST coordinate issues (direct sequence matching)
+  - Supports multiple input formats (.dna, .fasta, .fa)
+  - Automatic strand selection (F/R variants)
+  - Quality checking for translations
+  - Complete workflow in one command
+- **Configuration**: Input/output paths configured in `config.sh` under `PROPOSAL_INPUT_DIR` and `PROPOSAL_OUTPUT_DIR`
 
-#### `merge_annotations.py`
-Merges existing annotations with new ORF annotations from Prokka output.
-- **Input**: Original annotation file and Prokka output
-- **Output**: Merged GenBank file with both original and ORF annotations
-- **Usage**: `python3 merge_annotations.py ORIGINAL_FILE PROKKA_GBK_FILE OUTPUT_FILE`
-- **Options**: `--allow-overlaps` to permit overlapping features
+### Core Annotation Engine
 
-### Helper Scripts
-
-#### `4a_format_proteins.py`
-Formats protein FASTA files for Prokka compatibility.
-- **Usage**: `python3 4a_format_proteins.py INPUT_FILE OUTPUT_FILE`
-- **Function**: Converts ORF protein sequences to Prokka-compatible format
-
-#### `4b_restore_orf_names.py`
-Restores original ORF names in Prokka output files.
-- **Usage**: `python3 4b_restore_orf_names.py SAMPLE_NAME ORIGINAL_ORF_FILE [OUTPUT_DIR]`
-- **Function**: Maps Prokka locus tags back to original ORF names
+#### `improved_orf_annotator.py`
+Core annotation engine called automatically by the main scripts (no manual execution needed).
+- **Function**: Performs direct sequence matching and creates GenBank annotations
+- **Features**:
+  - Direct sequence matching (no BLAST coordinate issues)
+  - Handles F/R ORF variants intelligently
+  - Proper protein translation
+  - Overlap detection with existing features
+  - Support for multiple genome formats (.fasta, .dna, .gbk)
+- **Note**: This script is called automatically by `improved_retrospective_annotate.sh` and `04_orf_annotation.sh`
 
 ---
 
@@ -215,7 +223,7 @@ Restores original ORF names in Prokka output files.
 │       ├── miniasm_out/
 │       ├── super_canu_out/
 │       └── viral_verification/
-├── 04_annotation/               # Prokka annotations
+├── 04_annotation/               # ORF annotations
 ├── 05_itr_analysis/            # ITR and ORF analysis
 └── 06_trimmed_assembly/        # Final trimmed genomes
 ```
@@ -223,9 +231,9 @@ Restores original ORF names in Prokka output files.
 ## Requirements
 
 - Conda environments as specified in `config.sh`
-- Tools: Flye, Canu, Miniasm, Prokka, NanoPlot, viralVerify, RNAfold
+- Tools: Flye, Canu, Miniasm, NanoPlot, viralVerify, RNAfold
 - Python packages: BioPython, matplotlib, numpy
-- Reference databases: Pfam, custom ORF proteins
+- Reference databases: Pfam, custom ORF DNA sequences
 
 ## Notes
 

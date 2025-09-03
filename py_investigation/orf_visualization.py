@@ -23,19 +23,19 @@ def get_assembly_and_annotation_paths(sample):
         #},
         'canu': {
             'assembly': f"{base_dir}/03_assembly/{sample}/canu_out/{sample}.contigs.fasta",
-            'annotation': f"{base_dir}/04_annotation/{sample}/canu/{sample}.gff"  # You'll need to run Prokka on Canu
+            'annotation': f"{base_dir}/04_annotation/{sample}/canu/{sample}_orf_annotated.gff"  
         },
         'microsynth': {
             'assembly': f"{base_dir}/00_raw_data_microsynth/{sample}_results/{sample}_results/Assembly/{sample}.fasta",
-            'annotation': f"{base_dir}/04_annotation/{sample}/microsynth/{sample}.gff"  # You'll need to run Prokka on Microsynth
+            'annotation': f"{base_dir}/04_annotation/{sample}/microsynth/{sample}_orf_annotated.gff" 
         },
         'canu_ultra': {
             'assembly': f"{base_dir}/03_assembly/{sample}/canu_ultra_output/{sample}.contigs.fasta",
-            'annotation': f"{base_dir}/04_annotation/{sample}/canu_ultra/{sample}.gff"
+            'annotation': f"{base_dir}/04_annotation/{sample}/canu_ultra/{sample}_orf_annotated.gff"
         },
         'canu_ultra_trimmed': {
             'assembly': f"{base_dir}/06_trimmed_assembly/{sample}/canu_ultra/{sample}_canu_ultra_trimmed.fasta",
-            'annotation': f"{base_dir}/04_annotation/{sample}/canu_ultra_trimmed/{sample}.gff"
+            'annotation': f"{base_dir}/04_annotation/{sample}/canu_ultra_trimmed/{sample}_orf_annotated.gff"
         }
     }
     

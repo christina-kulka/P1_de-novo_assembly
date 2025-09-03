@@ -99,3 +99,10 @@ SAMPLE_LIST="B006 B021 B032 B044 D1701 S1-Japan"
 MIN_FEATURE_OVERLAP="50"  # Minimum overlap for feature collision detection in bp
 
 PROXIMITY_THRESHOLD=500
+
+# Temporary directory for processing
+TEMP_DIR="/tmp"
+
+# Retrospective annotation paths
+PROPOSAL_INPUT_DIR="${BASE_DIR}/proposal"
+PROPOSAL_OUTPUT_DIR="${BASE_DIR}/proposal"

@@ -63,7 +63,7 @@ run_step "02_preprocessing.sh" "$SAMPLE" "" "Data Preprocessing"
 run_step "03_assembly_canu.sh" "$SAMPLE" "" "Canu Assembly"
 
 # Step 4: ORF Annotation
-run_step "04_orf_annotation_prokka.sh" "$SAMPLE" "canu_ultra" "ORF Annotation"
+run_step "04_orf_annotation.sh" "$SAMPLE" "canu_ultra" "ORF Annotation"
 
 # Step 5: ITR and ORF Analysis
 run_step "05_itr_orf_eval.sh" "$SAMPLE" "canu_ultra" "ITR and ORF Analysis"
