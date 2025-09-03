@@ -25,7 +25,7 @@ SAMPLE_NAME=$1
 
 # Get script directory and source configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/config.sh"
+source "${SCRIPT_DIR}/../config.sh"
 
 # Define input and output files based on sample name
 # Check for both .dna and .fasta/.fa files
